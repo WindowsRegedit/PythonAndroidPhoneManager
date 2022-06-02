@@ -11,15 +11,17 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from qt_material import apply_stylesheet
 
+
+absolute_path = os.path.dirname(__file__)
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
     "AndroidPhoneManager")
 
-ADB_PATH = os.path.join(os.getcwd(), "dependencies", "adb.exe")
-AAPT_PATH = os.path.join(os.getcwd(), "dependencies", "aapt.exe")
+ADB_PATH = os.path.join(absolute_path, "dependencies", "adb.exe")
+AAPT_PATH = os.path.join(absolute_path, "dependencies", "aapt.exe")
 translation = {}
-if os.path.exists(os.path.join(os.getcwd(), "translations", "history.txt")):
-    with open(os.path.join(os.getcwd(), "translations", "history.txt"), "r", encoding="utf-8") as f:
-        with open(os.path.join(os.getcwd(), "translations", f.read()) + ".json", "r", encoding="utf-8") as f2:
+if os.path.exists(os.path.join(absolute_path, "translations", "history.txt")):
+    with open(os.path.join(absolute_path, "translations", "history.txt"), "r", encoding="utf-8") as f:
+        with open(os.path.join(absolute_path, "translations", f.read()) + ".json", "r", encoding="utf-8") as f2:
             translation = json.load(f2)
 
 
@@ -64,7 +66,7 @@ class Tabs(QTabWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.common_tab = App()
@@ -83,13 +85,16 @@ class Settings(QWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.resize(800, 800)
         self.layout = QGridLayout()
         self.languages = QComboBox(self)
-        self.langs = os.listdir(os.path.join(os.getcwd(), "translations")) + ["English"]
+        self.langs = os.listdir(
+            os.path.join(
+                absolute_path,
+                "translations")) + ["English"]
         if "history.txt" in self.langs:
             self.langs.remove("history.txt")
         for lang in range(len(self.langs)):
@@ -104,15 +109,21 @@ class Settings(QWidget):
 
     def confirm(self):
         global translation
-        with open(os.path.join(os.getcwd(), "translations", "history.txt"), "w", encoding="utf-8") as f:
+        with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
             f.write(self.languages.currentText())
         if self.languages.currentText() == "English":
-            os.remove(os.path.join(os.getcwd(), "translations", "history.txt"))
+            os.remove(os.path.join(absolute_path, "translations", "history.txt"))
         else:
-            with open(os.path.join(os.getcwd(), "translations", "history.txt"), "w", encoding="utf-8") as f:
+            with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
                 f.write(self.languages.currentText())
-        QMessageBox.information(self, get_translation("Success"), get_translation("Successfully changed language"))
-        QMessageBox.information(self, get_translation("Restart"), get_translation("Please restart the program"))
+        QMessageBox.information(
+            self,
+            get_translation("Success"),
+            get_translation("Successfully changed language"))
+        QMessageBox.information(
+            self,
+            get_translation("Restart"),
+            get_translation("Please restart the program"))
 
 
 class AppAnalyzer(QWidget):
@@ -122,7 +133,7 @@ class AppAnalyzer(QWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.resize(800, 800)
@@ -268,7 +279,7 @@ class App(QWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.update_devices()
@@ -340,7 +351,7 @@ class Rebooter(QWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.device_name = device_name
@@ -389,14 +400,14 @@ class Installer(QWidget):
         self.setWindowIcon(
             QIcon(
                 os.path.join(
-                    os.getcwd(),
+                    absolute_path,
                     "dependencies",
                     "favicon.ico")))
         self.file_name = file_name
         self.device_name = device_name
         self.loading_icon = QMovie(
             os.path.join(
-                os.getcwd(),
+                absolute_path,
                 "dependencies",
                 "loading.gif"))
         self.layout = QGridLayout()
@@ -415,9 +426,13 @@ class Installer(QWidget):
         self.close()
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     apply_stylesheet(app, theme='light_teal.xml')
     tab = Tabs()
     tab.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
