@@ -31,12 +31,16 @@ def get_translation(trans):
 
 def get_all_devices():
     output = subprocess.check_output([ADB_PATH, "devices"])
+    if hasattr(output, "decode"):
+        output = output.decode()
     res = re.findall("(.*)\t(.*)", output)
     return res
 
 
 def get_full_description(device_name):
     output = subprocess.check_output([ADB_PATH, "devices", "-l"])
+    if hasattr(output, "decode"):
+        output = output.decode()
     res = re.findall(
         f"{device_name}.*\\s(.*\\S).*\\sproduct:(.*\\S).*\\smodel:(.*\\S).*\\sdevice:(.*\\S).*\\stransport_id:(.*\\S)",
         output)
@@ -47,15 +51,22 @@ def get_full_description(device_name):
                        get_translation("Device Model"): r[2],
                        get_translation("Transport ID"): r[4]})
     result = result[0]
-    result[get_translation("Screen Resolution")] = re.search("Physical size: (.*)",
-                                                             subprocess.check_output(
-                                                                 [ADB_PATH, "-s", device_name, "shell", "wm",
-                                                                  "size"])).group(1)
-    result[get_translation("Android-ID")] = subprocess.check_output(
-        [ADB_PATH, "-s", device_name, "shell", "settings", "get", "secure", "android_id"]).strip()
-
+    t = subprocess.check_output(
+        [ADB_PATH, "-s", device_name, "shell", "wm",
+         "size"])
+    if hasattr(t, "decode"):
+        t = t.decode()
+    result[get_translation("Screen Resolution")] = re.search("Physical size: (.*)", t).group(1)
+    t = subprocess.check_output(
+        [ADB_PATH, "-s", device_name, "shell", "settings", "get", "secure", "android_id"])
+    if hasattr(t, "decode"):
+        t = t.decode()
+    result[get_translation("Android-ID")] = t.strip()
+    t = subprocess.check_output([ADB_PATH, "shell", "ifconfig"])
+    if hasattr(t, "decode"):
+        t = t.decode()
     result[get_translation("IPv4 Address")] = re.search(
-        "inet addr:(.*) Mask:", subprocess.check_output([ADB_PATH, "shell", "ifconfig"])).group(1)
+        "inet addr:(.*) Mask:", t).group(1)
     return result
 
 
@@ -94,7 +105,9 @@ class Settings(QWidget):
         self.langs = os.listdir(
             os.path.join(
                 absolute_path,
-                "translations")) + ["English"]
+                "translations"))
+        self.langs = [i for i in self.langs if i.endswith(".json")]
+        self.langs.append("English")
         if "history.txt" in self.langs:
             self.langs.remove("history.txt")
         for lang in range(len(self.langs)):
@@ -112,7 +125,11 @@ class Settings(QWidget):
         with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
             f.write(self.languages.currentText())
         if self.languages.currentText() == "English":
-            os.remove(os.path.join(absolute_path, "translations", "history.txt"))
+            os.remove(
+                os.path.join(
+                    absolute_path,
+                    "translations",
+                    "history.txt"))
         else:
             with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
                 f.write(self.languages.currentText())
@@ -164,6 +181,8 @@ class AppAnalyzer(QWidget):
         self.result.clear()
         result = subprocess.check_output(
             [AAPT_PATH, "dump", "badging", file_path])
+        if hasattr(result, "decode"):
+            result = result.decode()
         common = QTreeWidgetItem(
             self.result, [
                 get_translation("Common Message")])
@@ -283,7 +302,6 @@ class App(QWidget):
                     "dependencies",
                     "favicon.ico")))
         self.update_devices()
-        # self.show()
 
     def install_app(self):
         if not self.device_name:
@@ -319,6 +337,8 @@ class App(QWidget):
             return
         result = subprocess.check_output(
             [ADB_PATH, "-s", self.device_name, "root"])
+        if hasattr(result, "decode"):
+            result = result.decode()
         if not result.strip():
             QMessageBox.information(
                 self, get_translation("Info"), "获取root权限成功")

@@ -1,3 +1,5 @@
 build
 dist
 deploy.py
+android_manager.egg-info
+.idea

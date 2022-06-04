@@ -1,20 +1,20 @@
-### Android Manager By Python
+### Python 版 Android 管理器
 
-[中文文档](/README_ZH-CN.md)
+[English Docs](/README.md)
 
-#### Warning
-Because some questions about packaging, we are not able to release Binary File.
+#### 警告
+因为在打包时出现了一些问题，所以暂时不会支持二进制安装文件，请使用 源码安装 
 
-#### Info
-This is an Android Manage App Designed By WindowsRegedit.
+#### 描述
+这是 WindowsRegedit 编写而成的 Python 版 Android 管理器
 
-#### App Screenshot
+#### 软件截图
 ![img.png](https://fastly.jsdelivr.net/gh/WindowsRegedit/PythonAndroidPhoneManager@master/img.png)
 
-#### Translation Support
-Open the source, You will see a "translations" folder.
+#### 翻译支持
+打开源代码，你可以发现一个 "translations" 文件夹
 
-It contains Chinese Support like that:
+比如说中文翻译：
 ```json
 {
   "Screen Resolution": "屏幕分辨率",
@@ -78,28 +78,28 @@ It contains Chinese Support like that:
   "Please restart the program": "请重新启动程序"
 }
 ```
-All the keys are needed for translation.
+所有键都是需要被翻译的。
 
-Save the new Translation Files FileName as "LanguageName.json",
+将新翻译文件保存为 "LanguageName.json" 的格式,
 
-The program will Detect It.
+这个程序就会自动检测到它的。
 
-[Please Release Issues.]
+[请发布issues]
 
-#### Update Info
-[Version 1.0]
-Android Manager First Release!
+#### 更新记录
+[v1.0]
+Android 管理器 第一版！
 
-This is an important release.
+这是一个关键的版本
 
-It contains:
+它包含：
 
-Translation Support.
+翻译支持
 
-APK / APEX File Install Support.
+APK / APEX 文件安装支持.
 
-Analyze APK File Support.
+分析 APK 文件 支持.
 
-Issues:
+问题:
 
-Only support on Windows Temporarily.
+最近只支持Windows系统。
