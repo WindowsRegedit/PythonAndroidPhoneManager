@@ -87,6 +87,11 @@
 [请发布issues]
 
 #### 更新记录
+[Version 2.0]
+第二个版本！
+支持多平台
+(像 Windows, macOS 和 Linux系统)
+
 [v1.0]
 Android 管理器 第一版！
 

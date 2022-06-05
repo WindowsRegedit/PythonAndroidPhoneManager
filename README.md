@@ -87,6 +87,11 @@ The program will Detect It.
 [Please Release Issues.]
 
 #### Update Info
+[Version 2.0]
+Second Release!
+It finally supports Multiple System.
+(Like Windows, macOS and Linux)
+
 [Version 1.0]
 Android Manager First Release!
 
