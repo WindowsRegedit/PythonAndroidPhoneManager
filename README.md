@@ -87,6 +87,10 @@ The program will Detect It.
 [Please Release Issues.]
 
 #### Update Info
+[Version 3.0]
+After This Release, it needs internet connection to download ADB And AAPT Files,
+But It uses less disk spaces.<br>
+
 [Version 2.0]
 Second Release!
 It finally supports Multiple System.

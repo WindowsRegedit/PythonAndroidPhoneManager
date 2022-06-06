@@ -1,10 +1,10 @@
-import os
 import json
+import os
 import re
-import tempfile
-import threading
 import subprocess
 import sys
+import tempfile
+import threading
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -40,14 +40,11 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
             output = output.decode()
         res = re.findall(
             f"{device_name}.*\\s(.*\\S).*\\sproduct:(.*\\S).*\\smodel:(.*\\S).*\\sdevice:(.*\\S).*\\stransport_id:(.*\\S)",
-            output)
-        result = []
-        for r in res:
-            result.append({get_translation("Device Status"): get_translation(r[0]),
-                           get_translation("Device Product"): r[1],
-                           get_translation("Device Model"): r[2],
-                           get_translation("Transport ID"): r[4]})
-        result = result[0]
+            output)[0]
+        result = {get_translation("Device Status"): get_translation(res[0]),
+                  get_translation("Device Product"): res[1],
+                  get_translation("Device Model"): res[2],
+                  get_translation("Transport ID"): res[4]}
         t = subprocess.check_output(
             [ADB_PATH, "-s", device_name, "shell", "wm",
              "size"])
@@ -157,8 +154,8 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
             self.file_path.setReadOnly(True)
             self.layout.addWidget(self.file_path, 0, 1)
             self.layout.addWidget(self.select_file_button, 0, 0)
-            self.result = QTreeWidget(self)
-            self.layout.addWidget(self.result, 1, 0)
+            self.analyze_result = QTreeWidget(self)
+            self.layout.addWidget(self.analyze_result, 1, 0)
             self.setLayout(self.layout)
 
         def select_file(self):
@@ -174,16 +171,17 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
             return t
 
         def analyze_file(self, file_path):
-            self.result.clear()
+            self.analyze_result.clear()
             result = subprocess.check_output(
                 [AAPT_PATH, "dump", "badging", file_path])
             if hasattr(result, "decode"):
                 result = result.decode()
+            print(result)
             common = QTreeWidgetItem(
-                self.result, [
+                self.analyze_result, [
                     get_translation("Common Message")])
             common_msgs = re.search(
-                "package: " + " ".join(["(.*)='(.*)'" for i in range(7)]), result).groups()
+                "package: " + " ".join(["(.*?)='(.*?)'" for i in range(5)]), result).groups()
             for msg in range(0, len(common_msgs), 2):
                 self.set_element(get_translation(
                     common_msgs[msg]), common_msgs[msg + 1], common)
@@ -200,12 +198,12 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
                     result).group(1),
                 common)
             localization = QTreeWidgetItem(
-                self.result, [
+                self.analyze_result, [
                     get_translation("Localization Message")])
             locales = re.search(
                 "locales: (.*)",
                 result).group(1).split(" ")[
-                1:]
+                      1:]
             for locale in locales:
                 locale_name = locale.replace("'", "")
                 locale = self.set_element(
@@ -217,8 +215,8 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
                     application_label_locale,
                     locale)
 
-            self.result.addTopLevelItem(localization)
-            self.result.addTopLevelItem(common)
+            self.analyze_result.addTopLevelItem(localization)
+            self.analyze_result.addTopLevelItem(common)
 
     class App(QWidget):
         def __init__(self):
@@ -354,9 +352,9 @@ def run(ADB_PATH, AAPT_PATH, extra_func=None):
                 return
             with open(os.path.join(tempfile.gettempdir(), "androidShellBootLoader.bat"), "w") as f:
                 f.write("@echo off\n")
-                f.write("title Android Shell\n")
-                f.write("echo 安卓终端\n")
-                f.write("echo 在使用过程中，有可能会导致设备无法正常运行，请谨慎使用\n")
+                f.write(f"title {get_translation('Android Terminal')}\n")
+                f.write(f"echo {get_translation('Android Terminal')}\n")
+                f.write(f"echo {get_translation('When You Are Using It, May Be Cause The Device Not Able To Run, Please Use Carefully')}\n")
                 f.write(f"adb -s {self.device_name} shell\n")
                 f.write("exit 0\n")
             os.system(
