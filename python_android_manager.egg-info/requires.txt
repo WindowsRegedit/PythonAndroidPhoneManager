@@ -1,0 +1,3 @@
+requests==2.27.1
+PyQt5==5.15.6
+qt-material==2.12

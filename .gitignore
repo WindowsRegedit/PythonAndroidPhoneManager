@@ -1,7 +1,4 @@
 build
 dist
-readthedocs
-deploy.py
-android_manager.egg-info
+python_android_manager.egg-info
 .idea
-setup.py

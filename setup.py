@@ -2,32 +2,21 @@ import os
 import shutil
 from setuptools import setup, find_packages
 
-
-__version__ = "3.0"
-# 移除构建的build文件夹
+__version__ = "3.3"
+# Thanks to
+# https://stackoverflow.com/questions/72513435/how-can-i-create-my-setup-py-with-non-python-files-and-no-python-files-folders
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(CUR_PATH, "build")
 if os.path.isdir(path):
     print("del dir ", path)
     shutil.rmtree(path)
 
-
-def package_files(directory):
-    paths = []
-    for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            paths.append(os.path.join('..', path, filename))
-    return paths
-
-
-extra_files = package_files('android_manager')
-
 with open("requirements.txt", "r", encoding="utf-8") as f:
     requires = f.read()
     requires = requires.split("\n")
 
 setup(
-    name="android-manager",
+    name="python-android-manager",
     author_email="admin@wufan.fun",
     author="Fan Wu",
     description="Python Android Manager",
@@ -40,7 +29,7 @@ setup(
     package_dir={"": "."},
     entry_points={
         "console_scripts": [
-            "android-manager = android_manager.main:main"
+            "android-manager = android_manager.__main__:main"
         ]
     },
     install_requires=requires,
@@ -60,6 +49,9 @@ setup(
         # 'Programming Language :: Python :: 3.10',
         # 'Programming Language :: Python :: 3.11',
     ],
-    # long_description=open("README.rst", encoding="utf-8").read(),
-    packages=find_packages()
+    long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
+    packages=find_packages(),
+    include_package_data=True,
+    package_data={'android_manager': ['dependencies/*', 'translations/*']},
 )

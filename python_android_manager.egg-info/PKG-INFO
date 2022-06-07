@@ -1,3 +1,24 @@
+Metadata-Version: 2.1
+Name: python-android-manager
+Version: 3.3
+Summary: Python Android Manager
+Home-page: https://wufan.fun/
+Author: Fan Wu
+Author-email: admin@wufan.fun
+License: UNKNOWN
+Project-URL: Source Code, https://github.com/WindowsRegedit/PythonAndroidPhoneManager
+Keywords: GUI Android
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Description-Content-Type: text/markdown
+
 ### Android Manager By Python
 
 [中文文档](README_ZH-CN.md)
@@ -123,3 +144,4 @@ It contains:<br>
  - Analyze APK File Support.<br>
 Issues:<br>
 Only support on Windows Temporarily.<br>
+

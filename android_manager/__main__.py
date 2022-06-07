@@ -1,7 +1,7 @@
 import platform
 
-from caller import run
-from downloader import *
+from android_manager.caller import run
+from android_manager.downloader import *
 
 
 def run_windows():

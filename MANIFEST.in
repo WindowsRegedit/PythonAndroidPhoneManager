@@ -1,0 +1,2 @@
+recursive-include android_manager *.ico
+recursive-include android_manager *.json

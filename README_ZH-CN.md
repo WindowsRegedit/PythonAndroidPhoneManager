@@ -1,15 +1,32 @@
 ### Python 版 Android 管理器
 
-[English Docs](/README.md)
-
-#### 警告
-因为在打包时出现了一些问题，所以暂时不会支持二进制安装文件，请使用 源码安装 
+[English Docs](README.md)
 
 #### 描述
 这是 WindowsRegedit 编写而成的 Python 版 Android 管理器
 
 #### 软件截图
 ![img.png](https://fastly.jsdelivr.net/gh/WindowsRegedit/PythonAndroidPhoneManager@master/img.png)
+
+#### 安装
+##### 使用``pip``安装：（推荐）
+```shell
+pip install python-android-manager
+```
+使用此命令来启动：
+```shell
+android-manager
+```
+##### 使用源码安装：
+```shell
+git clone https://github.com/WindowsRegedit/PythonAndroidPhoneManager.git
+cd PythonAndroidPhoneManager
+python setup.py install
+```
+然后像``Pip``一样启动：
+```shell
+android-manager
+```
 
 #### 翻译支持
 打开源代码，你可以发现一个 "translations" 文件夹
@@ -87,28 +104,25 @@
 [请发布issues]
 
 #### 更新记录
-[Version 3.0]
+[v3.3]<br>
+支持``pip``安装了！<br>
+更多信息请阅读[安装](#安装)板块。
+
+[v3.0]<br>
 从这个版本以后，就需要网络连接了，
-但它使用了更少的磁盘空间
+但它使用了更少的磁盘空间。<br>
 
-[Version 2.0]
-第二个版本！
+[v2.0]<br>
+第二个版本！<br>
 支持多平台
-(像 Windows, macOS 和 Linux系统)
+(像 Windows, macOS 和 Linux系统)<br>
 
-[v1.0]
-Android 管理器 第一版！
-
-这是一个关键的版本
-
-它包含：
-
-翻译支持
-
-APK / APEX 文件安装支持.
-
-分析 APK 文件 支持.
-
-问题:
-
-最近只支持Windows系统。
+[v1.0]<br>
+Android 管理器 第一版！<br>
+这是一个关键的版本。<br>
+它包含：<br>
+ - 翻译支持<br>
+ - APK / APEX 文件安装支持.<br>
+ - 分析 APK 文件 支持.<br>
+问题:<br>
+最近只支持Windows系统。<br>
