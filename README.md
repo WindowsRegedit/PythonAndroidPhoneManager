@@ -11,7 +11,7 @@ This is an Android Manage App Designed By WindowsRegedit.<br>
 #### Installation
 ##### Use pip to install (recommend):
 ```shell
-pip install python-android-manager
+pip install android-manager
 ```
 And to boot like that:<br>
 ```shell

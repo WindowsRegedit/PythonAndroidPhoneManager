@@ -1,4 +1,5 @@
 build
 dist
-python_android_manager.egg-info
+android_manager.egg-info
 .idea
+suprise

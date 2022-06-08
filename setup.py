@@ -16,7 +16,7 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
     requires = requires.split("\n")
 
 setup(
-    name="python-android-manager",
+    name="android-manager",
     author_email="admin@wufan.fun",
     author="Fan Wu",
     description="Python Android Manager",

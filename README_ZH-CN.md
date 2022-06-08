@@ -11,7 +11,7 @@
 #### 安装
 ##### 使用``pip``安装：（推荐）
 ```shell
-pip install python-android-manager
+pip install android-manager
 ```
 使用此命令来启动：
 ```shell
