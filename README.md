@@ -100,6 +100,12 @@ The program will Detect It.<br>
 [Please Release Issues.]
 
 #### Update Info
+[Version 4]<br>
+New Block "Package Operation".<br>
+Support search packages, uninstall packages and install packages.<br>
+Change "Install Package" position to Package Operation.
+
+
 [Version 3.3]<br>
 We support ``pip`` installation now !<br>
 For more information, see: 

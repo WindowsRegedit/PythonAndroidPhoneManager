@@ -1,8 +1,9 @@
 import os
 import shutil
+from config import version as __version__
 from setuptools import setup, find_packages
 
-__version__ = "3.3"
+
 # Thanks to
 # https://stackoverflow.com/questions/72513435/how-can-i-create-my-setup-py-with-non-python-files-and-no-python-files-folders
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))

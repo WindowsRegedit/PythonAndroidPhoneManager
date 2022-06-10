@@ -3,3 +3,5 @@ dist
 android_manager.egg-info
 .idea
 suprise
+android_manager/dependencies/Windows
+*.apk
