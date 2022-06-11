@@ -6,9 +6,9 @@
 This is an Android Manage App Designed By WindowsRegedit.<br>
 
 #### App Screenshot
-![light_theme_en.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/light_theme_en.png)
+![light_theme_en.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/raw/master/light_theme_en.png)
 <font color="grey">Light Theme</font>
-![dark_theme_en.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/dark_theme_en.png)
+![dark_theme_en.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/raw/master/dark_theme_en.png)
 <font color="grey">Dark Theme</font>
 
 

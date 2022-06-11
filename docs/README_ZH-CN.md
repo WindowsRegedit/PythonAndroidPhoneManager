@@ -6,9 +6,9 @@
 这是 WindowsRegedit 编写而成的 Python 版 Android 管理器。
 
 #### 软件截图
-![light_theme_zh-cn.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/docs/dark_theme-zh-cn.png)
+![light_theme_zh-cn.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/raw/master/docs/light_theme_zh-cn.png)
 <font color="grey">浅色主题</font>
-![dark_theme_zh-cn.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/docs/light_theme-zh-cn.png)
+![dark_theme_zh-cn.png](https://github.com/WindowsRegedit/PythonAndroidPhoneManager/raw/master/docs/dark_theme_zh-cn.png)
 <font color="grey">深色主题</font>
 
 #### 安装
