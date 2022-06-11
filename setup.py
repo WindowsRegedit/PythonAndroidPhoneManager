@@ -54,5 +54,5 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    package_data={'android_manager': ['dependencies/*', 'translations/*']},
+    package_data={'android_manager': ['dependencies/*', 'translations/*', "*"]},
 )

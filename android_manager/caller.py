@@ -6,6 +6,7 @@ import tempfile
 import threading
 import subprocess
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from qt_material import apply_stylesheet
@@ -14,13 +15,25 @@ absolute_path = os.path.dirname(__file__)
 
 ADB_PATH = ""
 AAPT_PATH = ""
+FASTBOOT_PATH = ""
 
 translation = {}
-if os.path.exists(os.path.join(
-        absolute_path, "translations", "history.txt")):
-    with open(os.path.join(absolute_path, "translations", "history.txt"), "r", encoding="utf-8") as f:
-        with open(os.path.join(absolute_path, "translations", f.read()) + ".json", "r", encoding="utf-8") as f2:
+
+with open(os.path.join(absolute_path, "config.json"), "r", encoding="utf-8") as f:
+    config = json.load(f)
+    lang = config.get("language", "English")
+    theme = config.get("theme", "light_teal.xml")
+    if lang != "English":
+        with open(os.path.join(absolute_path, "translations", lang + ".json"), "r", encoding="utf-8") as f2:
             translation = json.load(f2)
+    else:
+        translation = {}
+
+
+
+def restart_program():
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
 
 
 def get_translation(trans):
@@ -50,29 +63,48 @@ def get_full_description(device_name):
     except IndexError:
         raise
 
-    result = {get_translation("Device Status"): get_translation(res[0]), get_translation("Device Product"): res[1],
-              get_translation("Device Model"): res[2], get_translation("Transport ID"): res[4],
-              get_translation("Screen Resolution"): re.search(
-                  "Physical size: (.*)", execute(
-                      [ADB_PATH, "-s", device_name, "shell", "wm",
-                       "size"])).group(1), get_translation("Android-ID"): execute([ADB_PATH,
-                                                                                   "-s",
-                                                                                   device_name,
-                                                                                   "shell",
-                                                                                   "settings",
-                                                                                   "get",
-                                                                                   "secure",
-                                                                                   "android_id"]).strip(),
-              get_translation("IPv4 Address"): re.search(
-                  "inet addr:(.*) Mask:", execute([ADB_PATH, "shell", "ifconfig"])).group(1)}
+    result = {
+        get_translation("Device Status"): get_translation(
+            res[0]),
+        get_translation("Device Product"): res[1],
+        get_translation("Device Model"): res[2],
+        get_translation("Transport ID"): res[4],
+        get_translation("Screen Resolution"): re.search(
+            "Physical size: (.*)",
+            execute(
+                [
+                    ADB_PATH,
+                    "-s",
+                    device_name,
+                    "shell",
+                    "wm",
+                    "size"])).group(1),
+        get_translation("Android-ID"): execute(
+                        [
+                            ADB_PATH,
+                            "-s",
+                            device_name,
+                            "shell",
+                            "settings",
+                            "get",
+                            "secure",
+                            "android_id"]).strip(),
+        get_translation("IPv4 Address"): re.search(
+                                "inet addr:(.*) Mask:",
+                                execute(
+                                    [
+                                        ADB_PATH,
+                                        "shell",
+                                        "ifconfig"])).group(1)}
 
     return result
 
 
-def run(adb_path, aapt_path, extra_func=None):
-    global ADB_PATH, AAPT_PATH
+def run(adb_path, aapt_path, fastboot_path, extra_func=None):
+    global ADB_PATH, AAPT_PATH, FASTBOOT_PATH, config, lang
     ADB_PATH = adb_path
     AAPT_PATH = aapt_path
+    FASTBOOT_PATH = fastboot_path
     if callable(extra_func):
         extra_func()
 
@@ -89,10 +121,85 @@ def run(adb_path, aapt_path, extra_func=None):
             self.common_tab = App()
             self.analyzer_tab = AppAnalyzer()
             self.settings_tab = Settings()
+            self.fastboot_tab = FastBoot()
             self.addTab(self.common_tab, get_translation("Common"))
             self.addTab(self.analyzer_tab, get_translation("Analyze APK"))
+            self.addTab(
+                self.fastboot_tab,
+                get_translation("FastBoot(Danger Zone)"))
             self.addTab(self.settings_tab, get_translation("Settings"))
             self.resize(800, 800)
+
+    class FastBoot(QWidget):
+        def __init__(self):
+            super().__init__()
+            self.layout = QGridLayout()
+            self.warning = QLabel(get_translation(
+                "When You Are Using It, May Be Cause The Device Not Able To Run, Please Use Carefully"), self)
+            self.warning.setStyleSheet("color: red")
+            self.devices = QTableWidget(self)
+            self.devices.setColumnCount(1)
+            self.devices.setRowCount(15)
+            self.devices.setHorizontalHeaderLabels(
+                [get_translation("Device Name")])
+            self.devices.setEditTriggers(QAbstractItemView.NoEditTriggers)
+            self.unlock_phone = QPushButton(
+                get_translation("Unlock Phone"), self)
+            self.unlock_phone.clicked.connect(self.unlock)
+            self.devices.cellPressed.connect(self.getPosContent)
+            self.device_name = None
+            self.refresh()
+            self.refresh_button = QPushButton(get_translation("Refresh"), self)
+            self.refresh_button.clicked.connect(self.refresh)
+            self.layout.addWidget(self.unlock_phone, 1, 2)
+            self.layout.addWidget(self.warning, 0, 0)
+            self.layout.addWidget(self.refresh_button, 1, 1)
+            self.layout.addWidget(self.devices, 1, 0)
+            self.setLayout(self.layout)
+
+        def refresh(self):
+            self.devices.clear()
+            devices = re.findall("(.*).*\\s+fastboot",
+                                 execute([FASTBOOT_PATH, "devices"]))
+            for device in range(len(devices)):
+                self.devices.setItem(
+                    device, 0, QTableWidgetItem(
+                        devices[device]))
+            self.unlock_phone.hide()
+
+        def getPosContent(self, row, col):
+            self.device_name = self.devices.item(row, col).text()
+            if not self.device_name:
+                return
+            self.unlock_phone.show()
+
+        def unlock(self):
+            unlock_input = QInputDialog()
+            unlock_input.setWindowTitle(get_translation("Enter Unlock Code"))
+            unlock_input.setLabelText(get_translation("Enter Unlock Code"))
+            unlock_input.setInputMode(QInputDialog.TextInput)
+            unlock_input.setTextEchoMode(QLineEdit.Password)
+            unlock_input.setContextMenuPolicy(Qt.NoContextMenu)
+            unlock_input.setFixedSize(500, 50)
+            unlock_input.show()
+            if unlock_input.exec() == QInputDialog.Accepted:
+                unlock_code = unlock_input.textValue()
+                if unlock_code.isdigit() and len(unlock_code) == 11:
+                    result = subprocess.run([FASTBOOT_PATH,
+                                             "-s",
+                                             self.device_name,
+                                             "oem",
+                                             "unlock",
+                                             unlock_code],
+                                            check=False,
+                                            stderr=subprocess.PIPE).stderr
+                    if hasattr(result, "decode"):
+                        result = result.decode()
+                    if "error" in result:
+                        QMessageBox.warning(self, "", get_translation(result))
+                    return
+                QMessageBox.warning(
+                    self, "", get_translation("Not A Valid Format"))
 
     class Settings(QWidget):
         def __init__(self):
@@ -113,39 +220,33 @@ def run(adb_path, aapt_path, extra_func=None):
                     "translations"))
             self.langs = [i for i in self.langs if i.endswith(".json")]
             self.langs.append("English")
-            if "history.txt" in self.langs:
-                self.langs.remove("history.txt")
             for lang in range(len(self.langs)):
                 self.langs[lang] = self.langs[lang].replace(".json", "")
             self.languages.addItems(self.langs)
-            self.languages.setCurrentText(get_translation("Language"))
+            self.languages.setCurrentText(config.get("language"))
             self.confirm_button = QPushButton(get_translation("Confirm"), self)
             self.confirm_button.clicked.connect(self.confirm)
+            self.use_light = QRadioButton(get_translation("Use Light Theme"), self)
+            self.use_dark = QRadioButton(get_translation("Use Dark Theme"), self)
+            if theme == "light_teal.xml":
+                self.use_light.setChecked(True)
+            else:
+                self.use_dark.setChecked(True)
             self.layout.addWidget(self.languages, 0, 0)
-            self.layout.addWidget(self.confirm_button, 1, 0)
+            self.layout.addWidget(self.use_light, 1, 0)
+            self.layout.addWidget(self.use_dark, 2, 0)
+            self.layout.addWidget(self.confirm_button, 3, 0)
             self.setLayout(self.layout)
 
         def confirm(self):
-            global translation
-            with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
-                f.write(self.languages.currentText())
-            if self.languages.currentText() == "English":
-                os.remove(
-                    os.path.join(
-                        absolute_path,
-                        "translations",
-                        "history.txt"))
+            config["language"] = self.languages.currentText()
+            if self.use_light.isChecked():
+                config["theme"] = "light_teal.xml"
             else:
-                with open(os.path.join(absolute_path, "translations", "history.txt"), "w", encoding="utf-8") as f:
-                    f.write(self.languages.currentText())
-            QMessageBox.information(
-                self,
-                get_translation("Success"),
-                get_translation("Successfully changed language"))
-            QMessageBox.information(
-                self,
-                get_translation("Restart"),
-                get_translation("Please restart the program"))
+                config["theme"] = "dark_teal.xml"
+            with open(os.path.join(absolute_path, "config.json"), "w", encoding="utf-8") as f:
+                json.dump(config, f, ensure_ascii=False)
+            restart_program()
 
     class AppAnalyzer(QWidget):
         def __init__(self):
@@ -171,8 +272,8 @@ def run(adb_path, aapt_path, extra_func=None):
             self.setLayout(self.layout)
 
         def select_file(self):
-            file_path, _ = QFileDialog.getOpenFileName(
-                self, get_translation("Select File"), "", f"{get_translation('APK File')}(*.apk)")
+            file_path, _ = QFileDialog.getOpenFileName(self, get_translation(
+                "Select File"), "", f"{get_translation('APK File')}(*.apk)")
             if file_path:
                 self.file_path.setText(file_path)
                 self.analyze_file(file_path)
@@ -212,7 +313,7 @@ def run(adb_path, aapt_path, extra_func=None):
             locales = re.search(
                 "locales: (.*)",
                 result).group(1).split(" ")[
-                      1:]
+                1:]
             for locale in locales:
                 locale_name = locale.replace("'", "")
                 locale = self.set_element(
@@ -236,6 +337,7 @@ def run(adb_path, aapt_path, extra_func=None):
             self.devices.setRowCount(15)
             self.devices.setHorizontalHeaderLabels(
                 [get_translation("Device Name"), get_translation("Device Status")])
+            self.devices.setEditTriggers(QAbstractItemView.NoEditTriggers)
             self.devices.cellPressed.connect(self.getPosContent)
             self.device_name = None
             self.refresh_button = QPushButton(get_translation("Refresh"), self)
@@ -248,7 +350,8 @@ def run(adb_path, aapt_path, extra_func=None):
                 get_translation("Get Root Permission"), self)
             self.shell_button = QPushButton(
                 get_translation("Run Shell Command"), self)
-            self.packages = QPushButton(get_translation("Package Operation"), self)
+            self.packages = QPushButton(
+                get_translation("Package Operation"), self)
             self.packages.clicked.connect(self.package_operation)
             self.root_button.clicked.connect(self.root)
             self.reboot_button.clicked.connect(self.reboot)
@@ -329,10 +432,10 @@ def run(adb_path, aapt_path, extra_func=None):
                 [adb_path, "-s", self.device_name, "root"])
             if not result.strip():
                 QMessageBox.information(
-                    self, get_translation("Info"), "获取root权限成功")
+                    self, get_translation("Info"), get_translation("Successfully Get Root Permission"))
             else:
                 QMessageBox.warning(self, get_translation(
-                    "Warning"), "获取root权限失败\n错误：" + result)
+                    "Warning"), get_translation("Unable To Get Root Permission\nError") + result)
 
         def shell(self):
             if not self.device_name:
@@ -425,10 +528,12 @@ def run(adb_path, aapt_path, extra_func=None):
         def refresh(self):
             self.uninstall_button.hide()
             self.packages.clear()
-            packages = execute([ADB_PATH, "shell", "pm", "list", "packages"]).split()
+            packages = execute(
+                [ADB_PATH, "shell", "pm", "list", "packages"]).split()
             packages = [i.replace("package:", "") for i in packages]
             for package in packages:
-                self.packages.setItem(packages.index(package), 0, QTableWidgetItem(package))
+                self.packages.setItem(
+                    packages.index(package), 0, QTableWidgetItem(package))
 
         def uninstall_app(self):
             if not self.package_name:
@@ -437,20 +542,27 @@ def run(adb_path, aapt_path, extra_func=None):
                     get_translation("Warning"),
                     get_translation("Please Select A Device"))
                 return
-            confirm_install = QMessageBox.information(self, get_translation("Warning"),
-                                                      get_translation("Confirm Uninstall?"),
-                                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            confirm_install = QMessageBox.information(
+                self,
+                get_translation("Warning"),
+                get_translation("Confirm Uninstall?"),
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes)
             if confirm_install == QMessageBox.Yes:
-                self.uninstaller = Uninstaller(self.package_name, self.device_name)
+                self.uninstaller = Uninstaller(
+                    self.package_name, self.device_name)
                 del self.uninstaller
                 self.refresh()
 
         def search_app(self):
             self.packages.clear()
-            packages = execute([ADB_PATH, "shell", "pm", "list", "packages"]).split()
-            packages = [i.replace("package:", "") for i in packages if self.search.text() in i]
+            packages = execute(
+                [ADB_PATH, "shell", "pm", "list", "packages"]).split()
+            packages = [i.replace("package:", "")
+                        for i in packages if self.search.text() in i]
             for package in packages:
-                self.packages.setItem(packages.index(package), 0, QTableWidgetItem(package))
+                self.packages.setItem(
+                    packages.index(package), 0, QTableWidgetItem(package))
 
     class Rebooter(QWidget):
         def __init__(self, device_name):
@@ -463,12 +575,13 @@ def run(adb_path, aapt_path, extra_func=None):
                         "dependencies",
                         "favicon.ico")))
             self.device_name = device_name
-            self.reboot_types = [get_translation(i) for i in
-                                 ["Normal Reboot",
-                                  "Reboot to Recovery",
-                                  "Reboot to Bootloader",
-                                  "Reboot to SideLoad",
-                                  "Reboot to Sideload-Auto-Reboot"]]
+            self.reboot_types = {
+                get_translation("Normal Reboot"): "",
+                get_translation("Reboot to Recovery"): "recovery",
+                get_translation("Reboot to Bootloader"): "bootloader",
+                get_translation("Reboot to SideLoad"): "sideload",
+                get_translation("Reboot to SideLoad-Auto-Reboot"): "sideload-auto-reboot"
+            }
             self.layout = QGridLayout()
             self.layout.addWidget(
                 QLabel(
@@ -476,7 +589,7 @@ def run(adb_path, aapt_path, extra_func=None):
                 0,
                 0)
             self.reboot_selection = QComboBox(self)
-            self.reboot_selection.addItems(self.reboot_types)
+            self.reboot_selection.addItems(self.reboot_types.keys())
             self.layout.addWidget(self.reboot_selection, 0, 1)
             self.reboot_button = QPushButton(get_translation("Reboot"), self)
             self.reboot_button.clicked.connect(self.reboot)
@@ -485,16 +598,7 @@ def run(adb_path, aapt_path, extra_func=None):
 
         def reboot(self):
             reboot_type = self.reboot_selection.currentText()
-            if reboot_type == self.reboot_types[0]:
-                external_cmd = ""
-            elif reboot_type == self.reboot_types[1]:
-                external_cmd = "bootloader"
-            elif reboot_type == self.reboot_types[2]:
-                external_cmd = "recovery"
-            elif reboot_type == self.reboot_types[3]:
-                external_cmd = "sideload"
-            elif reboot_type == self.reboot_types[4]:
-                external_cmd = "sideload-auto-reboot"
+            external_cmd = self.reboot_types[reboot_type]
             execute(
                 [adb_path, "-s", self.device_name, "reboot", external_cmd])
             QMessageBox.information(self, get_translation(
@@ -548,16 +652,23 @@ def run(adb_path, aapt_path, extra_func=None):
             super().__init__()
 
         def work(self):
-            cmd = subprocess.Popen(
-                [ADB_PATH, "-s", self.device_name, "shell", "pm", "uninstall", "-k", "--user", "0",
-                 self.package_name])
+            cmd = subprocess.Popen([ADB_PATH,
+                                    "-s",
+                                    self.device_name,
+                                    "shell",
+                                    "pm",
+                                    "uninstall",
+                                    "-k",
+                                    "--user",
+                                    "0",
+                                    self.package_name])
             cmd.wait()
             self.loading_icon.stop()
             self.close()
 
     def main():
         app = QApplication(sys.argv)
-        apply_stylesheet(app, theme='light_teal.xml')
+        apply_stylesheet(app, theme=theme)
         tab = Tabs()
         tab.show()
         sys.exit(app.exec())
